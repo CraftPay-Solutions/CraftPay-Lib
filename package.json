@@ -5,6 +5,10 @@
   "keywords": ["craftpay", "minecraft", "payment", "gateway", "sdk"],
   "license": "MIT",
   "homepage": "https://craftpay.pl",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/CraftPay-Solutions/CraftPay-Lib"
+  },
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
