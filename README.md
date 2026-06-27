@@ -1,92 +1,92 @@
 # @craftpay/sdk
 
-Official CraftPay SDK for JavaScript / TypeScript.
+Oficjalne SDK platformy [CraftPay](https://craftpay.pl) dla JavaScript / TypeScript.
 
-Works in **Node.js 18+**, **Bun**, **Deno**, and modern browsers (client module only).
+Działa w **Node.js 18+**, **Bun**, **Deno** oraz nowoczesnych przeglądarkach (tylko moduł client).
 
-Two modules in one package:
+Dwa moduły w jednym pakiecie:
 
-| Module | Use case |
-|--------|----------|
-| `@craftpay/sdk` | Connect your website/app to the CraftPay API |
-| `@craftpay/sdk/gateway` | For hosting panels — become a CraftPay payment gateway |
+| Moduł | Do czego |
+|-------|----------|
+| `@craftpay/sdk` | Podłączenie własnej strony/aplikacji pod API CraftPay |
+| `@craftpay/sdk/gateway` | Dla paneli hostingowych — stanie się bramką płatności w CraftPay |
 
 ---
 
-## Install
+## Instalacja
 
 ```bash
 npm install @craftpay/sdk
-# or
+# lub
 pnpm add @craftpay/sdk
-# or
+# lub
 bun add @craftpay/sdk
 ```
 
 ---
 
-## Client — connect your website to CraftPay API
+## Moduł Client — własna strona pod API CraftPay
 
 ```ts
 import { CraftPayClient } from '@craftpay/sdk'
 
 const client = new CraftPayClient({
-  shopUuid:  'your-shop-uuid',
-  apiSecret: 'your-api-secret',  // optional — only for /me and /transactions
+  shopUuid:  'uuid-twojego-sklepu',
+  apiSecret: 'twoj-api-secret',  // opcjonalne — tylko dla /me i /transactions
 })
 
-// Shop info
-const shop        = await client.shop().get()
-const gateways    = await client.shop().gateways()
-const topPlayers  = await client.shop().topPlayers()
-const recent      = await client.shop().recentPurchases()
-const news        = await client.shop().announcements()
+// Informacje o sklepie
+const sklep      = await client.shop().get()
+const bramki     = await client.shop().gateways()
+const topGracze  = await client.shop().topPlayers()
+const ostatnie   = await client.shop().recentPurchases()
+const ogloszenia = await client.shop().announcements()
 
-// Packages & categories
-const categories  = await client.categories().all()
-const withPkgs    = await client.categories().packages(3)   // id or slug
-const packages    = await client.packages().all()
+// Pakiety i kategorie
+const kategorie  = await client.categories().all()
+const zpakietami = await client.categories().packages(3)  // id lub slug
+const pakiety    = await client.packages().all()
 
-// Create an order → redirect buyer to order.payment_url
-const order = await client.orders().create({
+// Złożenie zamówienia → przekieruj kupującego na order.payment_url
+const zamowienie = await client.orders().create({
   package_id: 7,
   nickname:   'Steve',
   gateway:    'cashbill',
 })
-window.location.href = order.payment_url
+window.location.href = zamowienie.payment_url
 
-// Poll order status
-const status = await client.orders().status(order.order_token)
+// Status zamówienia
+const status = await client.orders().status(zamowienie.order_token)
 
-// Validate voucher
+// Walidacja vouchera
 const voucher = await client.vouchers().validate({
   code:     'PROMO100',
   nickname: 'Steve',
 })
 
-// Authenticated (requires apiSecret)
-const me           = await client.shop().me()
-const transactions = await client.orders().transactions({ page: 1, status: 'success' })
+// Wymagają apiSecret
+const ja           = await client.shop().me()
+const transakcje   = await client.orders().transactions({ page: 1, status: 'success' })
 ```
 
-### Error handling
+### Obsługa błędów
 
 ```ts
 import { CraftPayError, ShopNotFoundError } from '@craftpay/sdk'
 
 try {
-  const shop = await client.shop().get()
+  const sklep = await client.shop().get()
 } catch (err) {
   if (err instanceof ShopNotFoundError) {
-    // shop doesn't exist or is disabled
+    // sklep nie istnieje lub jest wyłączony
   } else if (err instanceof CraftPayError) {
-    console.log(err.errorCode)  // e.g. 'gateway_unavailable'
-    console.log(err.status)     // HTTP status code
+    console.log(err.errorCode)  // np. 'gateway_unavailable'
+    console.log(err.status)     // HTTP status
   }
 }
 ```
 
-### Next.js / React example
+### Next.js / React
 
 ```ts
 // lib/craftpay.ts
@@ -96,24 +96,24 @@ export const craftpay = new CraftPayClient({
   shopUuid: process.env.NEXT_PUBLIC_CRAFTPAY_SHOP_UUID!,
 })
 
-// pages/shop.tsx
-const packages = await craftpay.packages().all()
+// app/shop/page.tsx
+const pakiety = await craftpay.packages().all()
 ```
 
 ---
 
-## Gateway — for hosting panels (Node.js only)
+## Moduł Gateway — dla hostingów (tylko Node.js)
 
-Use this when you want your hosting to appear as an available payment gateway in CraftPay.
+Użyj gdy chcesz żeby Twój hosting pojawił się jako dostępna bramka płatności w CraftPay.
 
-### How it works
+### Jak to działa
 
 ```
-CraftPay  ──POST /api/craftpay/payments/create──▶  Your panel
+CraftPay  ──POST /api/craftpay/payments/create──▶  Twój panel
                                                         │
-                                                   (process payment)
+                                                   (przetwarzasz płatność)
                                                         │
-Your panel ──POST {notify_url}──────────────────▶  CraftPay
+Twój panel ──POST {notify_url}──────────────────▶  CraftPay
 ```
 
 ### Express.js
@@ -125,7 +125,7 @@ import { validateCraftPayRequest, dispatchWebhook } from '@craftpay/sdk/gateway'
 const app = express()
 app.use(express.json())
 
-const GATEWAY_OPTIONS = { apiKey: process.env.CRAFTPAY_GATEWAY_API_KEY! }
+const OPCJE = { apiKey: process.env.CRAFTPAY_GATEWAY_API_KEY! }
 
 app.post('/api/craftpay/payments/create', async (req, res) => {
   let craftpay
@@ -133,58 +133,57 @@ app.post('/api/craftpay/payments/create', async (req, res) => {
     craftpay = validateCraftPayRequest(
       req.body,
       req.headers.authorization?.replace('Bearer ', ''),
-      GATEWAY_OPTIONS,
+      OPCJE,
     )
   } catch (err: any) {
     return res.status(err.status ?? 400).json({ error: err.code, message: err.message })
   }
 
-  // Create payment in your system
-  const payment = await MyPaymentSystem.create({
+  // Stwórz płatność w swoim systemie
+  const platnosc = await MojSystemPlatnosci.create({
     amount:   craftpay.amount,
     currency: craftpay.currency,
   })
 
   res.status(201).json({
-    payment_id:  payment.id,
-    payment_url: payment.checkoutUrl,
+    payment_id:  platnosc.id,
+    payment_url: platnosc.checkoutUrl,
   })
 })
 ```
 
-### Notify CraftPay when payment completes
+### Powiadamianie CraftPay o płatności
 
-Call `dispatchWebhook` from your own payment webhook handler:
+Wywołaj `dispatchWebhook` z handlera swojego dostawcy płatności (np. Przelewy24, Stripe):
 
 ```ts
 import { dispatchWebhook } from '@craftpay/sdk/gateway'
 
-// e.g. your Przelewy24 / Stripe webhook handler
-app.post('/webhook/my-provider', async (req, res) => {
-  const payment = await MyPaymentSystem.getByRef(req.body.reference)
+app.post('/webhook/moj-dostawca', async (req, res) => {
+  const platnosc = await MojSystemPlatnosci.getByRef(req.body.reference)
 
   await dispatchWebhook({
-    notifyUrl: payment.craftpayNotifyUrl,
+    notifyUrl: platnosc.craftpayNotifyUrl,
     apiKey:    process.env.CRAFTPAY_GATEWAY_API_KEY!,
-    paymentId: payment.id,
-    orderId:   payment.craftpayOrderId,
-    amount:    payment.amount,
+    paymentId: platnosc.id,
+    orderId:   platnosc.craftpayOrderId,
+    amount:    platnosc.amount,
   })
 
   res.sendStatus(200)
 })
 ```
 
-### Signature helpers (advanced)
+### Podpisy HMAC (zaawansowane)
 
 ```ts
 import { SignatureHelper } from '@craftpay/sdk/gateway'
 
-// Verify incoming CraftPay request manually
+// Weryfikacja przychodzącego requestu od CraftPay
 const expected = SignatureHelper.forCreateRequest(apiKey, orderId, amount, notifyUrl)
 const valid = SignatureHelper.verify(expected, req.body.signature)
 
-// Build outgoing webhook signature
+// Budowanie podpisu webhooka wychodzącego do CraftPay
 const sig = SignatureHelper.forWebhook(apiKey, paymentId, orderId, amount, 'paid')
 ```
 
@@ -192,7 +191,7 @@ const sig = SignatureHelper.forWebhook(apiKey, paymentId, orderId, amount, 'paid
 
 ## TypeScript
 
-Full type definitions are included — no `@types/*` needed.
+Pełne definicje typów w środku — bez potrzeby instalowania `@types/*`.
 
 ```ts
 import type { Shop, Package, Order, Transaction } from '@craftpay/sdk'
