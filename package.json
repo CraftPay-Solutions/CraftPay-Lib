@@ -1,0 +1,36 @@
+{
+  "name": "@craftpay/sdk",
+  "version": "1.0.0",
+  "description": "Official CraftPay SDK — client API + hosting gateway integration",
+  "keywords": ["craftpay", "minecraft", "payment", "gateway", "sdk"],
+  "license": "MIT",
+  "homepage": "https://craftpay.pl",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs",
+      "types": "./dist/index.d.ts"
+    },
+    "./gateway": {
+      "import": "./dist/gateway/index.js",
+      "require": "./dist/gateway/index.cjs",
+      "types": "./dist/gateway/index.d.ts"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "tsup": "^8.0.0",
+    "typescript": "^5.4.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
