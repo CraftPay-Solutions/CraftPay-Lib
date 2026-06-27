@@ -134,7 +134,7 @@ export interface PaginatedResponse<T> {
   }
 }
 
-export interface TransactionFilters {
+export interface TransactionFilters extends Record<string, unknown> {
   page?: number
   per_page?: number
   status?: 'pending' | 'success' | 'failed' | 'expired'
